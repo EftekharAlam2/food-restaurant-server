@@ -44,6 +44,7 @@ async function run() {
       console.log(item);
       const result = await cartCollection.insertOne(item);
       res.send(result);
+      //checking
     });
 
     // Send a ping to confirm a successful connection
