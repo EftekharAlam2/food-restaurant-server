@@ -44,7 +44,6 @@ async function run() {
       console.log(item);
       const result = await cartCollection.insertOne(item);
       res.send(result);
-      //checking
     });
 
     // Send a ping to confirm a successful connection
@@ -59,9 +58,9 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.get("/", (req, res) => {
-  res.send("The restaurant server is running");
-});
+// app.get("/", (req, res) => {
+//   res.send("The restaurant server is running");
+// });
 
 app.listen(port, () => {
   console.log(`The restaurant server is on port ${port}`);
