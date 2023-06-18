@@ -3,12 +3,41 @@ const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const nodemailer = require("nodemailer");
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors());
 app.use(express.json());
+
+let transporter = nodemailer.createTransport({
+  host: "smtp.sendgrid.net",
+  port: 587,
+  auth: {
+    user: "apikey",
+    pass: process.env.SENDGRID_API_KEY,
+  },
+});
+
+const sendPaymentConfirmationEmail = (payment) => {
+  transporter.sendMail(
+    {
+      from: "Food Restaurant", // verified sender email
+      to: payment.email, // recipient email
+      subject: "Your order has been confirmed", // Subject line
+      text: "Hello world!", // plain text body
+      html: "<b>Hello world!</b>", // html body
+    },
+    function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    }
+  );
+};
 
 const verifyJWT = (req, res, next) => {
   const authorization = req.headers.authorization;
@@ -209,6 +238,8 @@ async function run() {
 
       //all cart has been deleted by this
       const deleteResult = await cartCollection.deleteMany(query);
+
+      sendPaymentConfirmationEmail(payment);
 
       res.send({ insertResult, deleteResult });
     });
