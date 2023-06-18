@@ -56,9 +56,13 @@ async function run() {
 
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "10hr",
-      });
+      const token = jwt.sign(
+        user,
+        process.env.ACCESS_TOKEN_SECRET
+        //   , {
+        //   expiresIn: "24hr",
+        // }
+      );
       res.send({ token });
     });
 
@@ -203,9 +207,26 @@ async function run() {
         _id: { $in: payment.cartItems.map((id) => new ObjectId(id)) },
       };
 
+      //all cart has been deleted by this
       const deleteResult = await cartCollection.deleteMany(query);
 
       res.send({ insertResult, deleteResult });
+    });
+
+    app.get("/admin-stats", verifyJWT, verifyAdmin, async (req, res) => {
+      const users = await usersCollection.estimatedDocumentCount();
+      const products = await menuCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+
+      const payments = await paymentCollection.find().toArray();
+      const revenue = payments.reduce((sum, payment) => sum + payment.price, 0);
+
+      res.send({
+        users,
+        products,
+        orders,
+        revenue,
+      });
     });
 
     // Send a ping to confirm a successful connection
