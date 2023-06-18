@@ -4,6 +4,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const nodemailer = require("nodemailer");
+const mg = require("nodemailer-mailgun-transport");
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
@@ -11,20 +12,29 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-let transporter = nodemailer.createTransport({
-  host: "smtp.sendgrid.net",
-  port: 587,
+// let transporter = nodemailer.createTransport({
+//   host: "smtp.sendgrid.net",
+//   port: 587,
+//   auth: {
+//     user: "apikey",
+//     pass: process.env.SENDGRID_API_KEY,
+//   },
+// });
+
+const auth = {
   auth: {
-    user: "apikey",
-    pass: process.env.SENDGRID_API_KEY,
+    api_key: process.env.EMAIL_PRIVATE_KEY,
+    domain: process.env.EMAIL_DOMAIN,
   },
-});
+};
+
+const transporter = nodemailer.createTransport(mg(auth));
 
 const sendPaymentConfirmationEmail = (payment) => {
   transporter.sendMail(
     {
-      from: "Food Restaurant", // verified sender email
-      to: payment.email, // recipient email
+      from: "eftekharalam0@gmail.com", // verified sender email
+      to: "eftekharalam0@gmail.com", // recipient email
       subject: "Your order has been confirmed", // Subject line
       text: "Hello world!", // plain text body
       html: "<b>Hello world!</b>", // html body
