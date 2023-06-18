@@ -52,6 +52,7 @@ async function run() {
     const menuCollection = client.db("foodDB").collection("menu");
     const reviewCollection = client.db("foodDB").collection("reviews");
     const cartCollection = client.db("foodDB").collection("carts");
+    const paymentCollection = client.db("foodDB").collection("payments");
 
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -191,6 +192,20 @@ async function run() {
       });
 
       res.send({ clientSecret: paymentIntent.client_secret });
+    });
+
+    //payment
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const insertResult = await paymentCollection.insertOne(payment);
+
+      const query = {
+        _id: { $in: payment.cartItems.map((id) => new ObjectId(id)) },
+      };
+
+      const deleteResult = await cartCollection.deleteMany(query);
+
+      res.send({ insertResult, deleteResult });
     });
 
     // Send a ping to confirm a successful connection
